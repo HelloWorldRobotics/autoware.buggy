@@ -2,19 +2,19 @@ repositories:
   core/autoware_msgs:
     type: git
     url: https://github.com/autowarefoundation/autoware_msgs.git
-    version: v1.0
+    version: release/v1.0
   core/autoware_adapi_msgs:
     type: git
     url: https://github.com/autowarefoundation/autoware_adapi_msgs.git
-    version: v1.0
+    version: release/v1.0
   core/autoware_common:
     type: git
     url: https://github.com/autowarefoundation/autoware_common.git
-    version: v1.0
+    version: release/v1.0
   core/autoware.core:
     type: git
     url: https://github.com/autowarefoundation/autoware.core.git
-    version: v1.0
+    version: release/v1.0
   core/external/autoware_auto_msgs:
     type: git
     url: https://github.com/tier4/autoware_auto_msgs.git
@@ -22,7 +22,7 @@ repositories:
   universe/autoware.universe:
     type: git
     url: https://github.com/autowarefoundation/autoware.universe.git
-    version: v1.0
+    version: release/v1.0
   universe/external/tier4_ad_api_adaptor:
     type: git
     url: https://github.com/tier4/tier4_ad_api_adaptor.git
@@ -62,7 +62,7 @@ repositories:
   launcher/autoware_launch:
     type: git
     url: https://github.com/HelloWorldRobotics/autoware_launch.git
-    version: v1.0
+    version: release/v1.0
   sensor_component/external/sensor_component_description:
     type: git
     url: https://github.com/tier4/sensor_component_description.git
@@ -82,7 +82,7 @@ repositories:
   sensor_kit/buggy_sensor_kit_launch:
     type: git
     url: https://github.com/HelloWorldRobotics/buggy_sensor_kit_launch.git
-    version: v1.0
+    version: release/v1.0
   sensor_kit/external/awsim_sensor_kit_launch:
     type: git
     url: https://github.com/RobotecAI/awsim_sensor_kit_launch.git
@@ -98,4 +98,4 @@ repositories:
   param/autoware_individual_params:
     type: git
     url: https://github.com/HelloWorldRobotics/autoware_individual_params.git
-    version: v1.0
+    version: release/v1.0
