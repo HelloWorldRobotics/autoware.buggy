@@ -1,164 +1,99 @@
-# Docker images for Autoware
+# Open AD Kit: containerized workloads for Autoware
 
-We have two types of Docker image: `development` and `prebuilt`.
+[Open AD Kit](https://autoware.org/open-ad-kit/) offers containers for Autoware to simplify the development and deployment of Autoware and its dependencies. This directory contains scripts to build and run the containers.
 
-1. The `development` image enables you to develop Autoware without setting up the local development environment.
-2. The `prebuilt` image contains executables and enables you to try out Autoware quickly.
-   - Note that the prebuilt image is not designed for deployment on a real vehicle!
+Detailed instructions on how to use the containers can be found in the [Open AD Kit documentation](https://autowarefoundation.github.io/autoware-documentation/main/installation/autoware/docker-installation/).
 
-**Note**: Before proceeding, confirm and agree with the [NVIDIA Deep Learning Container license](https://developer.nvidia.com/ngc/nvidia-deep-learning-container-license). By pulling and using the Autoware Universe images, you accept the terms and conditions of the license.
+## Multi-stage Dockerfile structure
 
-## Prerequisites
+![](./Dockerfile.svg)
 
-- [Docker](https://docs.docker.com/engine/install/ubuntu/)
-- [rocker](https://github.com/osrf/rocker)
-  - We use `rocker` to enable GUI applications such as `rviz` and `rqt` on Docker Containers.
-  - Refer to [here](http://wiki.ros.org/docker/Tutorials/GUI) for more details.
+The suffix `-devel` (e.g. `universe-devel`) is intended for use as a [development container](https://containers.dev). On the other hand, those without the `-devel` suffix (e.g. `universe`) are intended to be used as a runtime container.
 
-The [setup script](../setup-dev-env.sh) will install these dependencies through the following roles.
+### `$BASE_IMAGE`
 
-- [Docker](../ansible/roles/docker_engine/README.md)
-- [rocker](../ansible/roles/rocker/README.md)
+This is a base image of this Dockerfile. [`ros:humble-ros-base-jammy`](https://hub.docker.com/_/ros/tags?page=&page_size=&ordering=&name=humble-ros-base-jammy) will be given.
 
-## Usage
+### `base`
 
-### Development image
+This stage performs only the basic setup required for all Autoware images.
 
-```bash
-docker run --rm -it \
-  -v {path_to_your_workspace}:/autoware \
-  ghcr.io/autowarefoundation/autoware-universe:latest
-```
+### `rosdep-depend`
 
-To run with `rocker`:
+The ROS dependency package list files will be generated.
+These files will be used in the subsequent stages:
 
-If you use `rocker<=0.2.9`, add an option of `--env NVIDIA_DRIVER_CAPABILITIES=""` or `--env NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics` to avoid the CUDA environment error. For more details, see [this issue](https://github.com/autowarefoundation/autoware/issues/2452).
+- `core-devel`
+- `universe-common`
+- `universe-COMPONENT-devel` (e.g. `universe-sensing-perception-devel`)
+- `universe-COMPONENT` (e.g. `universe-sensing-perception`)
+- `universe-devel`
+- `universe`
 
-```bash
-rocker --nvidia --x11 --user \
- --volume {path_to_your_workspace} \
- -- ghcr.io/autowarefoundation/autoware-universe:latest
-```
+By generating only the package list files and copying them to the subsequent stages, the dependency packages will not be reinstalled during the container build process unless the dependency packages change.
 
-If you locate your workspace under your home directory, you can use the `--home` option instead:
+### `core-devel`
 
-```bash
-rocker --nvidia --x11 --user --home \
-  -- ghcr.io/autowarefoundation/autoware-universe:latest
-```
+This stage installs the dependency packages based on `/rosdep-core-depend-packages.txt` and build the packages under the `core` directory of `autoware.repos`.
 
-To use a customized `.bashrc` for the container:
+### `universe-common-devel`
 
-```bash
-rocker --nvidia --x11 --user --home \
-  --volume $HOME/.bashrc.container:$HOME/.bashrc \
-  -- ghcr.io/autowarefoundation/autoware-universe:latest
-```
+This stage installs the dependency packages based on `/rosdep-universe-common-depend-packages.txt` and build the packages under the following directories of `autoware.repos`.
 
-### Prebuilt image
+- `universe/external`
+- `universe/autoware.universe/common`
 
-```bash
-docker run --rm -it \
-  ghcr.io/autowarefoundation/autoware-universe:latest-prebuilt
-```
+### `universe-sensing-perception-devel`
 
-To run with `rocker`:
+This stage installs the dependency packages based on `/rosdep-universe-sensing-perception-depend-packages.txt` and build the packages under the following directories of `autoware.repos`.
 
-```bash
-rocker --nvidia --x11 --user \
-  --volume {path_to_your_workspace} \
-  -- ghcr.io/autowarefoundation/autoware-universe:latest-prebuilt
-```
+- `universe/autoware.universe/perception`
+- `universe/autoware.universe/sensing`
 
-If you intend to use pre-existing data such as maps or Rosbags, modify the `--volume` options shown below.
+### `universe-sensing-perception`
 
-```bash
-rocker --nvidia --x11 --user \
-  --volume {path_to_your_workspace} \
-  --volume {path_to_your_map_data} \
-  --volume {path_to_your_log_data} \
-  -- ghcr.io/autowarefoundation/autoware-universe:latest-prebuilt
-```
+This stage is a Autoware Universe Sensing/Perception runtime container. It only includes the dependencies given by `/rosdep-universe-sensing-perception-exec-depend-packages.txt` and the binaries built in the `universe-sensing-perception-devel` stage.
 
-## Building Docker images on your local machine
+### `universe-localization-mapping-devel`
 
-If you want to build these images locally for development purposes, run the following command:
+This stage installs the dependency packages based on `/rosdep-universe-localization-mapping-depend-packages.txt` and build the packages under the following directories of `autoware.repos`.
 
-```bash
-cd autoware/
-./docker/build.sh
-```
+- `universe/autoware.universe/localization`
+- `universe/autoware.universe/map`
 
-To build without CUDA, use the `--no-cuda` option:
+### `universe-localization-mapping`
 
-```bash
-./docker/build.sh --no-cuda
-```
+This stage is a Autoware Universe Localization/Mapping runtime container. It only includes the dependencies given by `/rosdep-universe-localization-mapping-exec-depend-packages.txt` and the binaries built in the `universe-localization-mapping-devel` stage.
 
-To specify the platform, use the `--platform` option:
+### `universe-planning-control-devel`
 
-```bash
-./docker/build.sh --platform linux/amd64
-./docker/build.sh --platform linux/arm64
-```
+This stage installs the dependency packages based on `/rosdep-universe-planning-control-depend-packages.txt` and build the packages under the following directories of `autoware.repos`.
 
-## Tips
+- `universe/autoware.universe/control`
+- `universe/autoware.universe/planning`
 
-### Precautions for not using `rocker`
+### `universe-planning-control`
 
-If either image is run without `rocker`, then `root` privileges will be used.
-This can affect your local environment as below:
+This stage is a Autoware Universe Planning/Control runtime container. It only includes the dependencies given by `/rosdep-universe-planning-control-exec-depend-packages.txt` and the binaries built in the `universe-planning-control-devel` stage.
 
-```sh-session
-$ docker run --rm -it -v {path_to_your_workspace}:/autoware ghcr.io/autowarefoundation/autoware-universe:latest
-# colcon build
-# exit
-$ rm build/COLCON_IGNORE
-rm: remove write-protected regular empty file 'build/COLCON_IGNORE'? y
-rm: cannot remove 'build/COLCON_IGNORE': Permission denied
-```
+### `universe-devel`
 
-To prevent this error occurring when rocker is not used, there are two suggested methods:
+This stage installs the dependency packages based on `/rosdep-universe-depend-packages.txt` and build the remaining packages of `autoware.repos`:
 
-1. Prepare a dedicated workspace for the docker image.
-2. Use Visual Studio Code's [Remote - Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension.
+- `launcher`
+- `param`
+- `sensor_component`
+- `sensor_kit`
+- `universe/autoware.universe/evaluator`
+- `universe/autoware.universe/launch`
+- `universe/autoware.universe/simulator`
+- `universe/autoware.universe/system`
+- `universe/autoware.universe/tools`
+- `universe/autoware.universe/vehicle`
+- `vehicle`
 
-   To use the extension, the following settings can be used to create a user account in a similar way to `rocker.  
-   Refer to [this document](https://code.visualstudio.com/remote/advancedcontainers/add-nonroot-user) for more details.
+This stage provides an all-in-one development container to Autoware developers. By running the host's source code with volume mounting, it allows for easy building and debugging of Autoware.
 
-   ```jsonc
-   // .devcontainer/devcontainer.json
-   {
-     "name": "Autoware",
-     "build": {
-       "dockerfile": "Dockerfile"
-     },
-     "remoteUser": "autoware",
-     "settings": {
-       "terminal.integrated.defaultProfile.linux": "bash"
-     }
-   }
-   ```
+### `universe`
 
-   ```docker
-   # .devcontainer/Dockerfile
-   FROM ghcr.io/autowarefoundation/autoware-universe:latest
-
-   ARG USERNAME=autoware
-   ARG USER_UID=1000
-   ARG USER_GID=$USER_UID
-
-   RUN groupadd --gid $USER_GID $USERNAME \
-     && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
-     && apt-get update \
-     && apt-get install -y sudo \
-     && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
-     && chmod 0440 /etc/sudoers.d/$USERNAME
-   ```
-
-### Using Docker images other than `latest`
-
-There are also images versioned based on the `date` or `release tag`.  
-Use them when you need a fixed version of the image.
-
-The list of versions can be found [here](https://github.com/autowarefoundation/autoware/packages).
+This stage is an Autoware Universe runtime container. It only includes the dependencies given by `/rosdep-exec-depend-packages.txt`, the binaries built in the `universe-devel` stage, and artifacts.

@@ -4,6 +4,8 @@ This role installs [ROS 2](http://www.ros2.org/) following [this page](https://d
 
 Additional steps may be needed depending on the `rosdistro` you choose.
 
+To prevent the update of the ROS 2 packages, if ros-`distro`-desktop is held, the installation process for the packages will be skipped and output warning.
+
 <!-- TODO: Add these steps to the role if Humble requires. -->
 
 ```bash
@@ -30,7 +32,7 @@ For Universe, the `rosdistro` variable can also be found in:
 [../../playbooks/universe.yaml](../../playbooks/universe.yaml)
 
 ```bash
-wget -O /tmp/amd64.env https://raw.githubusercontent.com/autowarefoundation/autoware/v1.0/amd64.env && source /tmp/amd64.env
+wget -O /tmp/amd64.env https://raw.githubusercontent.com/autowarefoundation/autoware/main/amd64.env && source /tmp/amd64.env
 
 # Taken from: https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html
 
