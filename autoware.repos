@@ -86,8 +86,8 @@ repositories:
   # launcher
   launcher/autoware_launch:
     type: git
-    url: https://github.com/autowarefoundation/autoware_launch.git
-    version: main
+    url: https://github.com/HelloWorldRobotics/autoware_launch.git
+    version: release/2024.09
   # sensor_component
   sensor_component/external/sensor_component_description:
     type: git
@@ -99,8 +99,8 @@ repositories:
     version: ros2
   sensor_component/external/nebula:
     type: git
-    url: https://github.com/tier4/nebula.git
-    version: main
+    url: https://github.com/HelloWorldRobotics/nebula.git
+    version: release/2024.09
   # Fork of transport_drivers that enables reduction of copy operations
   sensor_component/transport_drivers:
     type: git
@@ -128,6 +128,10 @@ repositories:
     type: git
     url: https://github.com/autowarefoundation/single_lidar_sensor_kit_launch.git
     version: main
+  sensor_kit/buggy_sensor_kit_launch:
+    type: git
+    url: https://github.com/HelloWorldRobotics/buggy_sensor_kit_launch.git
+    version: release/v1.0
   # vehicle
   vehicle/sample_vehicle_launch:
     type: git
@@ -141,8 +145,19 @@ repositories:
     type: git
     url: https://github.com/tier4/pacmod_interface.git
     version: main
+  vehicle/buggy_vehicle_launch:
+    type: git
+    url: https://github.com/HelloWorldRobotics/buggy_vehicle_launch.git
+    version: main
   # param
   param/autoware_individual_params:
     type: git
-    url: https://github.com/autowarefoundation/autoware_individual_params.git
-    version: main
+    url: https://github.com/HelloWorldRobotics/autoware_individual_params.git
+    version: release/2024.09
+
+  # LIO-SAM
+  universe/external/LIO-SAM:
+    type: git
+    url: https://github.com/HelloWorldRobotics/LIO-SAM.git
+    version: ros2
+  
