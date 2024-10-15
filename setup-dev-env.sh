@@ -55,6 +55,10 @@ while [ "$1" != "" ]; do
         # Disable installation dev package of role 'cuda' and 'tensorrt'.
         option_runtime=true
         ;;
+    --no-cuda-tensorrt)
+        # Disable installation of CUDA and TensorRT
+        option_no_cuda_tensorrt=true
+        ;;
     --data-dir)
         # Set data directory
         option_data_dir="$2"
@@ -124,6 +128,10 @@ if [ "$option_runtime" = "true" ]; then
     ansible_args+=("--extra-vars" "install_devel=N")
 else
     ansible_args+=("--extra-vars" "install_devel=y")
+fi
+
+if [ "$option_no_cuda_tensorrt" = "true" ]; then
+    ansible_args+=("--extra-vars" "install_cuda_tensorrt=false")
 fi
 
 # Check downloading artifacts
